@@ -34,7 +34,39 @@ public class FilmServlet extends HttpServlet {
         RequestUtils.setAccessControlHeaders(response); // Set CORS headers for external access
 
         try {
-            List<Film> allFilms = dao.getAllFilms(); // Retrieve all films from the database
+            // Retrieve pagination parameters from the request
+            String offsetParam = request.getParameter("offset");
+            String limitParam = request.getParameter("limit");
+
+            // Default values for pagination
+            int offset = 0;
+            int limit = 10;
+
+            // Parse the pagination parameters if they are provided
+            if (offsetParam != null) {
+                try {
+                    offset = Integer.parseInt(offsetParam);
+                } catch (NumberFormatException e) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    writer.write("Invalid offset format.");
+                    writer.close();
+                    return;
+                }
+            }
+
+            if (limitParam != null) {
+                try {
+                    limit = Integer.parseInt(limitParam);
+                } catch (NumberFormatException e) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    writer.write("Invalid limit format.");
+                    writer.close();
+                    return;
+                }
+            }
+
+            // Retrieve films with pagination from the database
+            List<Film> allFilms = dao.getAllFilms(limit, offset);
             String format = request.getHeader("Accept"); // Determine the desired response format
             String responseText = RequestUtils.formatResponse(format, allFilms); // Format the response based on the request header
             
@@ -58,7 +90,7 @@ public class FilmServlet extends HttpServlet {
      */
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        RequestUtils.setAccessControlHeaders(resp); // Set necessary HTTP headers for CORS
-        resp.setStatus(HttpServletResponse.SC_OK); // Respond with HTTP 200 OK for OPTIONS requests
+        RequestUtils.setAccessControlHeaders(resp);
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 }

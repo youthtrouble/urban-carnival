@@ -23,16 +23,14 @@ public class marshallUtil {
      * @throws JAXBException if an error occurs during marshaling
      */
     public static <T> String toXml(List<T> objects, Class<T> clazz) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(clazz);  // Create a JAXBContext for the specified class.
+        ObjectListWrapper<T> wrapper = new ObjectListWrapper<>(objects);  // Wrap the list of objects.
+
+        JAXBContext context = JAXBContext.newInstance(ObjectListWrapper.class, clazz);  // Create a JAXBContext for the wrapper and the class.
         Marshaller marshaller = context.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);  // Format the XML output.
 
         StringWriter writer = new StringWriter();
-        writer.append("<list>");  // Start the list tag.
-        for (T object : objects) {
-            marshaller.marshal(object, writer);  // Marshal each object in the list into XML and append to StringWriter.
-        }
-        writer.append("</list>");  // End the list tag.
+        marshaller.marshal(wrapper, writer);  // Marshal the wrapper containing the list of objects into XML.
 
         return writer.toString();  // Convert StringWriter content to a string and return.
     }

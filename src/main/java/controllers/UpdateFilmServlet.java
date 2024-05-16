@@ -23,7 +23,7 @@ public class UpdateFilmServlet extends HttpServlet {
     private FilmDao dao = FilmDao.getInstance(); // Singleton instance of FilmDao
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         PrintWriter out = response.getWriter();
         try {
             RequestUtils.setAccessControlHeaders(response); // Set CORS headers for cross-origin requests
@@ -54,5 +54,14 @@ public class UpdateFilmServlet extends HttpServlet {
         } finally {
             out.close(); // Ensure the PrintWriter is closed regardless of how the try block exits
         }
+    }
+    
+    /**
+     * Handles HTTP OPTIONS requests, commonly used in CORS pre-flight checks.
+     */
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        RequestUtils.setAccessControlHeaders(resp);
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 }

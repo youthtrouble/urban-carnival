@@ -14,9 +14,9 @@ import models.Film;
  */
 public class FilmDao {
 
-    private static final String DATABASE_URL = "jdbc:mysql://127.0.0.1:3306/cloud";
-    private static final String DATABASE_USER = "root";
-    private static final String DATABASE_PASSWORD = "my-secret-pw";
+    private static final String DATABASE_URL = "jdbc:mysql://mudfoot.doc.stu.mmu.ac.uk:6306/ajibolaa";
+    private static final String DATABASE_USER = "ajibolaa";
+    private static final String DATABASE_PASSWORD = "berThpol5";
 
     // Private constructor to prevent instantiation outside of this class.
     private FilmDao() {
@@ -90,23 +90,43 @@ public class FilmDao {
     }
 
     /**
-     * Retrieves all films from the database.
+     * Retrieves all films from the database with optional pagination support.
+     * @param limit The maximum number of films to retrieve (optional).
+     * @param offset The offset from where to start retrieving films (optional).
      * @return An ArrayList of Film objects.
      * @throws SQLException If a database access error occurs.
      */
-    public ArrayList<Film> getAllFilms() throws SQLException {
+    public ArrayList<Film> getAllFilms(Integer limit, Integer offset) throws SQLException {
         ArrayList<Film> allFilms = new ArrayList<>();
-        String sql = "SELECT * FROM films;";
+        StringBuilder sql = new StringBuilder("SELECT * FROM films");
+        if (limit != null && offset != null) {
+            sql.append(" LIMIT ? OFFSET ?");
+        }
+
         try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                allFilms.add(extractFilmFromResultSet(rs));
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            if (limit != null && offset != null) {
+                pstmt.setInt(1, limit);
+                pstmt.setInt(2, offset);
+            }
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    allFilms.add(extractFilmFromResultSet(rs));
+                }
             }
         }
         return allFilms;
     }
 
+    /**
+     * Overloaded method to retrieve all films from the database without pagination.
+     * @return An ArrayList of Film objects.
+     * @throws SQLException If a database access error occurs.
+     */
+    public ArrayList<Film> getAllFilms() throws SQLException {
+        return getAllFilms(null, null);
+    }
+    
     /**
      * Inserts a new film into the database.
      * @param film The Film object to insert.

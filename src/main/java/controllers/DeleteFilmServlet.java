@@ -13,23 +13,32 @@ import utils.RequestUtils;
 
 /**
  * Servlet implementation to handle deletion of a film.
- * Mapped to '/delete-film' URL pattern.
+ * Mapped to '/delete-film/*' URL pattern to include film ID as a path parameter.
  */
-@WebServlet("/delete-film")
+@WebServlet("/delete-film/*")
 public class DeleteFilmServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private FilmDao dao = FilmDao.getInstance(); // Use the singleton FilmDao instance.
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RequestUtils.setAccessControlHeaders(response); // Set necessary HTTP headers for CORS.
 
         PrintWriter out = response.getWriter();
         int filmId;
 
-        // Safely parse the film ID from the request parameter.
+        // Extract the film ID from the path parameter.
+        String pathInfo = request.getPathInfo(); // /{id}
+        if (pathInfo == null || pathInfo.equals("/")) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.write("Invalid film ID format.");
+            out.close(); // Ensure PrintWriter is closed after writing response.
+            return;
+        }
+
+        // Parse the ID from the path
         try {
-            filmId = Integer.parseInt(request.getParameter("id"));
+            filmId = Integer.parseInt(pathInfo.substring(1)); // Extract the ID after '/'
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.write("Invalid film ID format.");
@@ -54,5 +63,14 @@ public class DeleteFilmServlet extends HttpServlet {
         } finally {
             out.close(); // Always close the PrintWriter in a finally block to ensure resource release.
         }
+    }
+
+    /**
+     * Handles HTTP OPTIONS requests, commonly used in CORS pre-flight checks.
+     */
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        RequestUtils.setAccessControlHeaders(resp);
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 }

@@ -56,9 +56,10 @@ public class RequestUtils {
      * Allows access from any origin and supports various HTTP methods and headers.
      */
     public static void setAccessControlHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Origin", "*"); // Allow all domains
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
     }
 
     /**
@@ -71,14 +72,16 @@ public class RequestUtils {
     public static Film parseRequestBody(HttpServletRequest request, String contentType) throws IOException {
         BufferedReader reader = request.getReader();
         try {
-            if ("application/json".equals(contentType)) {
+        	switch (contentType) {
+            case "application/json":
                 return new Gson().fromJson(reader, Film.class);  // Parse JSON to a Film object.
-            } else if ("application/xml".equals(contentType)) {
+            case "application/xml":
                 JAXBContext jaxbContext = JAXBContext.newInstance(Film.class);
                 return (Film) jaxbContext.createUnmarshaller().unmarshal(reader);  // Parse XML to a Film object.
-            } else {
+            default:
                 return null;  // Return null if the content type is neither JSON nor XML.
-            }
+        	}
+
         } catch (Exception e) {
             return null;  // Return null if parsing fails.
         } finally {

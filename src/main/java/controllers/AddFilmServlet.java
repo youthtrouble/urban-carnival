@@ -59,4 +59,14 @@ public class AddFilmServlet extends HttpServlet {
             out.close(); // Close the PrintWriter
         }
     }
+    
+    /**
+     * Handles HTTP OPTIONS requests, commonly used in CORS pre-flight checks.
+     */
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        RequestUtils.setAccessControlHeaders(resp);
+        resp.setStatus(HttpServletResponse.SC_OK);
+    }
+
 }
